@@ -1,0 +1,78 @@
+#!/bin/bash
+
+# Das Programm erhaelt eine oder mehrere Zahlen als Argumente und bestimmt fuer
+# jede angegebene Zahl, ob sie prim ist. 
+# Autor: Djordja Markovic
+
+# check arguements if empty then exit
+CNT=0
+for i in "$@"; do
+	# Hilfsfunktion
+	if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+		echo "
+Hilfe:
+NAME
+	primzahlen	- check given numbers for type integer and no string.
+			- counts valid given arguments 
+
+SYNOPSIS
+	primzahlen EXPRESSION
+	primzahlen [ EXPRESSION ]
+	primzahlen f.i. 1 2 3 4 5 6 7, returns 1 for 2,3,5,7
+	primzahlen f.i. {1..100}, returns 1 for 2,3,5,7,11,13,17, etc.
+	bash primzahlen 29 - calls the script and returns "29 1"
+
+DESCRIPTION
+	Exit with the status determined by EXPRESSION, for instance:
+		primzahlen 29 - returns 1
+		primzahlen 33 - returns 0
+	Exit with the status determined by EXPRESSION.
+		--help display this help and exit
+		-h display this help and exit
+"
+		exit 0
+	elif [ -z "$i" ]; then
+		echo "Sie muessen ein gueltiges Argument(Ganzzahl) uebergeben!"
+		exit 1
+	else
+		((CNT++));
+	fi
+done
+# print input count
+echo "Die Anzahl der gueltigen uebergebenen Argumente betraegt: $CNT."
+
+# check correctness and only integer
+REGEX='^[0-9]*$'
+ARGUMENTS=("$@")
+for ((i=0; i<${#ARGUMENTS[@]}; i++)); do
+	if ! [[ ${ARGUMENTS[i]} =~ $REGEX ]]; then
+		echo "Der Input \"${ARGUMENTS[i]}\" muss eine Ganzzahl sein."
+		echo "Can not process input ${ARGUMENTS[i]}" >> primzahlen.err
+	elif [[ ${ARGUMENTS[i]} =~ $REGEX ]]; then
+	     	#echo "Der Input \"${ARGUMENTS[i]}\" ist ein Integer."
+		echo "Processing input \"${ARGUMENTS[i]}\"" >> primzahlen.log 
+
+		# Hauptfunktion
+		# variable ISPRIM, 0=nonprim, 1=prim
+		ISPRIM=1 
+		#for i in "$@"; do 
+		if [ ${ARGUMENTS[i]} -le 1 ]; then
+			ISPRIM=0
+		elif [ ${ARGUMENTS[i]} -eq 2 ]; then 
+			ISPRIM=1
+		fi
+
+		for ((j=2; j<${ARGUMENTS[i]}-1; j++)); do
+			#echo "i=$i, j=$j mod=$(($i % $j))"
+			if [ $((${ARGUMENTS[i]} % $j)) -eq 0 ]; then
+				ISPRIM=0
+				break
+			else
+		       		ISPRIM=1
+			fi
+		done	
+
+		# print result	
+		echo "${ARGUMENTS[i]} $ISPRIM"
+	fi
+done
